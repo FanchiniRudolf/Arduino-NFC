@@ -18,7 +18,15 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);
 #define redyellowTime 1000
 #define othercolorsTime 3000
 
+int nfcState = 0;
 int modeState = 0;
+unsigned long timerRead = 0;
+
+bool rfid_tag_present_prev = false;
+bool rfid_tag_present = false;
+int _rfid_error_counter = 0;
+bool _tag_found = false;
+
 
 void turnGreen(){
   pinMode(greenLED, OUTPUT);
@@ -63,11 +71,45 @@ void shutOff(){
           pinMode(whiteLED, INPUT);
 }
 
+boolean checkTag(){
+  rfid_tag_present_prev = rfid_tag_present;
+
+  _rfid_error_counter += 1;
+  if(_rfid_error_counter > 2){
+    _tag_found = false;
+  }
+
+  // Detect Tag without looking for collisions
+  byte bufferATQA[2];
+  byte bufferSize = sizeof(bufferATQA);
+
+  // Reset baud rates
+  mfrc522.PCD_WriteRegister(mfrc522.TxModeReg, 0x00);
+  mfrc522.PCD_WriteRegister(mfrc522.RxModeReg, 0x00);
+  // Reset ModWidthReg
+  mfrc522.PCD_WriteRegister(mfrc522.ModWidthReg, 0x26);
+
+  MFRC522::StatusCode result = mfrc522.PICC_RequestA(bufferATQA, &bufferSize);
+
+  if(result == mfrc522.STATUS_OK){
+    if ( ! mfrc522.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue   
+      return false;
+    }
+    _rfid_error_counter = 0;
+    _tag_found = true;        
+  }
+  
+  rfid_tag_present = _tag_found;
+  
+}
+
+
+
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);                                           // Initialize serial communications with the PC
-  SPI.begin();                                                  // Init SPI bus
-  mfrc522.PCD_Init();                                              // Init MFRC522 card
+  Serial.begin(9600);   // Initialize serial communications with the PC
+  while (!Serial);    // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
+  SPI.begin();      // Init SPI bus
+  mfrc522.PCD_Init();   // Init MFRC522
   Serial.println("Aproach card");
   pinMode(manualButton, INPUT_PULLUP);
   pinMode(autoButton, INPUT_PULLUP);
@@ -76,62 +118,43 @@ void setup() {
   pinMode(blueLED, INPUT);
   pinMode(yellowLED, INPUT);
   pinMode(whiteLED, INPUT);
-  
 }
 
 void loop() {
+
+  checkTag();
   
-      switch(modeState){
-        case 0:
-          shutOff();
-          break;
-          
-        case 1:
-        turnRed();
-          break;
-          
-        case 2:
-          turnGreen();
-          break;
-          
-        case 3:
-         turnAll();
-          break;
-      }
-
-      
-  // put your main code here, to run repeatedly:
-    if ( !mfrc522.PICC_IsNewCardPresent()) {
-    modeState=0;
-    return;
-  }
-  if ( !mfrc522.PICC_ReadCardSerial()) {
-    modeState=0;
-    return;
-  }
-
- if( modeState == 0){
+  // rising edge
+  if(rfid_tag_present && rfid_tag_present_prev){
+    Serial.println("Tag found");
+    if( modeState == 0){
   modeState = 3;
- }
-      int status = digitalRead(autoButton);
+ }   }
+
+  if (modeState == 3 || modeState == 1 || modeState == 2){ 
+     Serial.println("check boton");
+  int status = digitalRead(autoButton);
       if (status == 0){
         modeState = 1;
+         Serial.println("boton pressed");
       }
       status = digitalRead(manualButton);
       if (status == 0){
         modeState = 2;
+        Serial.println("boton pressed");
       }
-
-      switch(modeState){
+  switch(modeState){
         case 0:
           shutOff();
           break;
           
         case 1:
+        shutOff();
         turnRed();
           break;
           
         case 2:
+          shutOff();
           turnGreen();
           break;
           
@@ -139,7 +162,13 @@ void loop() {
          turnAll();
           break;
       }
-  Serial.println("Helo");
-   delay (1000);
-  Serial.println("bye");
+       
+  }
+  
+  // falling edge
+  if (!rfid_tag_present && rfid_tag_present_prev){
+    Serial.println("Tag gone");
+    modeState =0;
+    shutOff();
+  }
 }

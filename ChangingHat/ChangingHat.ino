@@ -13,14 +13,55 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);
 #define greenLED 4
 #define whiteLED 7
 #define yellowLED 6
-#define intervalLED 1000
-#define intervalNFC 1500
 
-int color = 0;
-unsigned long timerLED = 0;
-unsigned long timerNFC = 0;
-int ledState = 0;
+#define manualTime = 6000
+#define redyellowTime 1000
+#define othercolorsTime 3000
 
+int modeState = 0;
+
+void turnGreen(){
+  pinMode(greenLED, OUTPUT);
+  digitalWrite(greenLED, HIGH);
+}
+
+void turnBlue(){
+  pinMode(blueLED, OUTPUT);
+  digitalWrite(blueLED, HIGH);
+}
+void turnRed(){
+  pinMode(redLED, OUTPUT);
+  digitalWrite(redLED, HIGH);
+}
+void turnYellow(){
+  pinMode(yellowLED, OUTPUT);
+  digitalWrite(yellowLED, HIGH);
+}
+void turnWhite(){
+  pinMode(whiteLED, OUTPUT);
+  digitalWrite(whiteLED, HIGH);
+}
+
+void turnAll(){
+  pinMode(redLED, OUTPUT);
+        digitalWrite(redLED, HIGH);
+         pinMode(greenLED, OUTPUT);
+        digitalWrite(greenLED, HIGH);
+         pinMode(blueLED, OUTPUT);
+        digitalWrite(blueLED, HIGH);
+         pinMode(yellowLED, OUTPUT);
+        digitalWrite(yellowLED, HIGH);
+         pinMode(whiteLED, OUTPUT);
+        digitalWrite(whiteLED, HIGH);
+}
+
+void shutOff(){
+  pinMode(redLED, INPUT);
+          pinMode(greenLED, INPUT);
+          pinMode(blueLED, INPUT);
+          pinMode(yellowLED, INPUT);
+          pinMode(whiteLED, INPUT);
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -39,27 +80,66 @@ void setup() {
 }
 
 void loop() {
+  
+      switch(modeState){
+        case 0:
+          shutOff();
+          break;
+          
+        case 1:
+        turnRed();
+          break;
+          
+        case 2:
+          turnGreen();
+          break;
+          
+        case 3:
+         turnAll();
+          break;
+      }
+
+      
   // put your main code here, to run repeatedly:
-  /*if (millis()-timerNFC > intervalNFC){
-    timerNFC = 0;
-  if ( mfrc522.PICC_IsNewCardPresent()) {
-    
-    if ( mfrc522.PICC_ReadCardSerial()) {
-     */
+    if ( !mfrc522.PICC_IsNewCardPresent()) {
+    modeState=0;
+    return;
+  }
+  if ( !mfrc522.PICC_ReadCardSerial()) {
+    modeState=0;
+    return;
+  }
+
+ if( modeState == 0){
+  modeState = 3;
+ }
       int status = digitalRead(autoButton);
       if (status == 0){
-        pinMode(whiteLED, OUTPUT);
-        digitalWrite(whiteLED, HIGH);
-      }else{
-        pinMode(whiteLED, INPUT);
+        modeState = 1;
       }
-      
-      
-      
-      /*
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
       }
-    }
-  }
-*/
-  
+
+      switch(modeState){
+        case 0:
+          shutOff();
+          break;
+          
+        case 1:
+        turnRed();
+          break;
+          
+        case 2:
+          turnGreen();
+          break;
+          
+        case 3:
+         turnAll();
+          break;
+      }
+  Serial.println("Helo");
+   delay (1000);
+  Serial.println("bye");
 }

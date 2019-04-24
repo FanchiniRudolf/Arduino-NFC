@@ -40,12 +40,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  /*if (millis()-timerNFC > intervalNFC){
-    timerNFC = 0;
-  if ( mfrc522.PICC_IsNewCardPresent()) {
-    
-    if ( mfrc522.PICC_ReadCardSerial()) {
-     */
+  
       int status = digitalRead(autoButton);
       if (status == 0){
         pinMode(whiteLED, OUTPUT);
@@ -55,11 +50,5 @@ void loop() {
       }
       
       
-      
-      /*
-      }
-    }
-  }
-*/
   
 }

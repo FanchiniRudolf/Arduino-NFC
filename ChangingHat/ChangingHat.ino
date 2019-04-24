@@ -14,13 +14,13 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);
 #define whiteLED 7
 #define yellowLED 6
 
-#define manualTime = 6000
-#define redyellowTime 1000
-#define othercolorsTime 3000
+long autoTime = 0;
 
-int nfcState = 0;
+
 int modeState = 0;
-unsigned long timerRead = 0;
+int status = 1;
+unsigned long timer = 0;
+long selector = 0;
 
 bool rfid_tag_present_prev = false;
 bool rfid_tag_present = false;
@@ -103,6 +103,147 @@ boolean checkTag(){
   
 }
 
+void manualMode(){
+  shutOff();
+
+  
+  if (timer+5000<= millis()){
+  selector =random(1, 6);
+  timer = millis();
+  }
+  switch (selector){
+    case 1:
+      turnRed();
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed");
+      }
+      
+       break;
+       
+      case 2:
+      turnGreen();
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed");
+      }
+      break;
+      
+      case 3:
+      turnBlue();
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed"); 
+      }
+      break;
+      
+      case 4:
+      turnWhite();
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed");
+      }
+       break;
+       
+      case 5:
+      turnYellow();
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed");
+      }
+       break;
+       
+       
+  }
+}
+
+void autoMode(){
+  shutOff();
+
+  if (timer+autoTime<= millis()){
+  selector =random(1, 6);
+  timer = millis();
+  }
+  switch (selector){
+    case 1:
+      turnRed();
+      autoTime = 1000;
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed");
+      }
+       break;
+       
+      case 2:
+      turnGreen();
+      autoTime = 3000;
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed");
+      }
+      break;
+      
+      case 3:
+      turnBlue();
+      autoTime = 3000;
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed"); 
+      }
+      break;
+      
+      case 4:
+      turnWhite();
+      autoTime = 3000;
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed");
+      }
+       break;
+       
+      case 5:
+      turnYellow();
+      autoTime = 1000;
+      status = digitalRead(manualButton);
+      if (status == 0){
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        Serial.println("boton pressed");
+      }
+       break;
+       
+       
+  }
+}
+
 
 
 void setup() {
@@ -126,22 +267,22 @@ void loop() {
   
   // rising edge
   if(rfid_tag_present && rfid_tag_present_prev){
-    Serial.println("Tag found");
     if( modeState == 0){
   modeState = 3;
  }   }
 
   if (modeState == 3 || modeState == 1 || modeState == 2){ 
-     Serial.println("check boton");
-  int status = digitalRead(autoButton);
+      status = digitalRead(autoButton);
       if (status == 0){
         modeState = 1;
-         Serial.println("boton pressed");
+        timer = 0;
       }
       status = digitalRead(manualButton);
       if (status == 0){
         modeState = 2;
-        Serial.println("boton pressed");
+        timer = millis();
+        selector =random(1, 6);
+        
       }
   switch(modeState){
         case 0:
@@ -149,13 +290,11 @@ void loop() {
           break;
           
         case 1:
-        shutOff();
-        turnRed();
+        autoMode();
           break;
           
         case 2:
-          shutOff();
-          turnGreen();
+          manualMode();
           break;
           
         case 3:

@@ -94,6 +94,7 @@ boolean checkTag(){
 
   if(result == mfrc522.STATUS_OK){
     if ( ! mfrc522.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue   
+      Serial.println("se perdio");
       return false;
     }
     _rfid_error_counter = 0;
@@ -104,37 +105,13 @@ boolean checkTag(){
   
 }
 
-
-
-
-void setup() {
-  Serial.begin(9600);   // Initialize serial communications with the PC
-  while (!Serial);    // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
-  SPI.begin();      // Init SPI bus
-  mfrc522.PCD_Init();   // Init MFRC522
-  Serial.println("Aproach card");
-  pinMode(redLED, INPUT);
-  pinMode(greenLED, INPUT);
-  pinMode(blueLED, INPUT);
-  pinMode(yellowLED, INPUT);
-  pinMode(whiteLED, INPUT);
-  timer = millis();
-}
-
-void loop() {
-
-  //checkTag();
-  
-  // rising edge
-  /*if(rfid_tag_present && rfid_tag_present_prev){
-    if( modeState == 0){
-  modeState = 3;
- }   }
-      checkButtons();*/
-  if (timer + 2000 <= millis() && seriesState == 0){
+void blinkingLights(){
+      
+  if (timer + 1000 <= millis() && seriesState == 0){
     timer = millis();
     shutOff();
     modeState ++;
+    Serial.println(modeState);
   switch(modeState){
          case 1:
          turnAll();
@@ -239,12 +216,41 @@ if (timer + 300 <= millis() && seriesState == 1){
           break;
       }
 }
+}
+
+
+void setup() {
+  Serial.begin(9600);   // Initialize serial communications with the PC
+  while (!Serial);    // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
+  SPI.begin();      // Init SPI bus
+  mfrc522.PCD_Init();   // Init MFRC522
+  Serial.println("Aproach card");
+  pinMode(redLED, INPUT);
+  pinMode(greenLED, INPUT);
+  pinMode(blueLED, INPUT);
+  pinMode(yellowLED, INPUT);
+  pinMode(whiteLED, INPUT);
+  timer = millis();
+}
+
+void loop() {
+
+  checkTag();
   
+  // rising edge
+  if(rfid_tag_present && !rfid_tag_present_prev){
+  Serial.println("Tag found");
+  seriesState =0;
+  }
+  
+  blinkingLights();
+
   
   // falling edge
-  /*if (!rfid_tag_present && rfid_tag_present_prev){
+  if (!rfid_tag_present && rfid_tag_present_prev){
     Serial.println("Tag gone");
     modeState =0;
+    seriesState =2;
     shutOff();
-  }*/
+  }
 }

@@ -6,21 +6,21 @@
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  
 
-#define autoButton 8
-#define manualButton 2
-#define blueLED 5
-#define redLED 3
-#define greenLED 4
-#define whiteLED 7
-#define yellowLED 6
 
-long autoTime = 0;
+#define blueLED 4
+#define redLED 2
+#define greenLED 3
+#define whiteLED 6
+#define yellowLED 5
 
-
+int blinks = 4;
+int blinkState = blinks;
+int seriesState = 1;
 int modeState = 0;
 int status = 1;
 unsigned long timer = 0;
 long selector = 0;
+
 
 bool rfid_tag_present_prev = false;
 bool rfid_tag_present = false;
@@ -71,24 +71,6 @@ void shutOff(){
           pinMode(whiteLED, INPUT);
 }
 
-void checkButtons(){
-  if (modeState == 3 || modeState == 1 || modeState == 2){ 
-      status = digitalRead(autoButton);
-      if(status == HIGH){
-        Serial.println("wrong");
-        modeState = 1;
-        timer = millis();
-        selector =random(1, 6);
-      }
-      status = digitalRead(manualButton);
-      if (status == 0){
-        modeState = 2;
-        timer = millis();
-        selector =random(1, 6);
-        
-      }
-}
-}
 
 boolean checkTag(){
   rfid_tag_present_prev = rfid_tag_present;
@@ -122,94 +104,6 @@ boolean checkTag(){
   
 }
 
-void manualMode(){
-  shutOff();
-
-  
-  if (timer+5000<= millis()){
-  selector =random(1, 6);
-  timer = millis();
-  }
-  switch (selector){
-    case 1:
-      turnRed();
-      status = digitalRead(manualButton);
-      checkButtons();
-      
-       break;
-       
-      case 2:
-      turnGreen();
-      status = digitalRead(manualButton);
-      checkButtons();
-      break;
-      
-      case 3:
-      turnBlue();
-      status = digitalRead(manualButton);
-      checkButtons();
-      break;
-      
-      case 4:
-      turnWhite();
-      status = digitalRead(manualButton);
-      checkButtons();
-       break;
-       
-      case 5:
-      turnYellow();
-      status = digitalRead(manualButton);
-      checkButtons();
-       break;
-       
-       
-  }
-}
-
-void autoMode(){
-  shutOff();
-  if (timer+autoTime<= millis()){
-    Serial.println("wtf");
-  selector =random(1, 6);
-  timer = millis();
-  }
-  switch (selector){
-    case 1:
-      turnRed();
-      autoTime = 1000;
-      checkButtons();
-       break;
-       
-      case 2:
-      turnGreen();
-      autoTime = 3000;
-      checkButtons();
-      break;
-      
-      case 3:
-      turnBlue();
-      autoTime = 3000;
-      checkButtons();
-
-      break;
-      
-      case 4:
-      turnWhite();
-      autoTime = 3000;
-      checkButtons();
-
-       break;
-       
-      case 5:
-      turnYellow();
-      autoTime = 1000;
-      checkButtons();
-
-       break;
-       
-       
-  }
-}
 
 
 
@@ -219,50 +113,138 @@ void setup() {
   SPI.begin();      // Init SPI bus
   mfrc522.PCD_Init();   // Init MFRC522
   Serial.println("Aproach card");
-  pinMode(manualButton, INPUT_PULLUP);
-  pinMode(autoButton, INPUT);
   pinMode(redLED, INPUT);
   pinMode(greenLED, INPUT);
   pinMode(blueLED, INPUT);
   pinMode(yellowLED, INPUT);
   pinMode(whiteLED, INPUT);
+  timer = millis();
 }
 
 void loop() {
 
-  checkTag();
+  //checkTag();
   
   // rising edge
-  if(rfid_tag_present && rfid_tag_present_prev){
+  /*if(rfid_tag_present && rfid_tag_present_prev){
     if( modeState == 0){
   modeState = 3;
  }   }
-      checkButtons();
-
+      checkButtons();*/
+  if (timer + 2000 <= millis() && seriesState == 0){
+    timer = millis();
+    shutOff();
+    modeState ++;
   switch(modeState){
-        case 0:
-          shutOff();
+         case 1:
+         turnAll();
           break;
-          
-        case 1:
-        autoMode();
-          break;
-          
+        
         case 2:
-          manualMode();
+          turnRed();
           break;
           
         case 3:
-         turnAll();
+        turnGreen();
+         break;
+          
+        case 4:
+          turnBlue();
+         break;
+          
+        case 5:
+         turnYellow();
+          break;
+          
+        case 6:
+         turnWhite();
+          break;
+          
+        case 7:
+         shutOff();
+         modeState = 0;
+         seriesState = 1;
           break;
       }
-       
+  }
+if (timer + 300 <= millis() && seriesState == 1){
+  //encender tira
+  timer = millis();
+  shutOff();
+  blinkState --;
+  Serial.println(modeState);
+  Serial.print(blinkState);
+    switch(modeState){
+        
+        case 0:
+        if (blinkState%2==1){
+          turnRed();
+        }else if (blinkState%2==0 && blinkState != 0){
+          shutOff;
+        }else if (blinkState == 0){
+          blinkState = blinks;
+          modeState ++;
+        }
+          break;
+          
+        case 1:
+        if (blinkState%2==1){
+          turnGreen();
+        }else if (blinkState%2==0 && blinkState != 0){
+          shutOff;
+        }else if (blinkState== 0){
+          blinkState = blinks;
+          modeState ++;
+        }
+          break;          
+        case 2:
+          if (blinkState%2==1){
+          turnBlue();
+        }else if (blinkState%2==0 && blinkState != 0){
+          shutOff;
+        }else if (blinkState== 0){
+          blinkState = blinks;
+          modeState ++;
+        }
+          break;
+          
+        case 3:
+         if (blinkState%2==1){
+          turnYellow();
+        }else if (blinkState%2==0 && blinkState != 0){
+          shutOff;
+        }else if (blinkState == 0){
+          blinkState = blinks;
+          modeState ++;
+        }
+          break;
+          
+          
+        case 4:
+         if (blinkState%2==1){
+          turnWhite();
+        }else if (blinkState%2==0 && blinkState != 0){
+          shutOff;
+        }else if (blinkState== 0){
+          blinkState = blinks;
+          modeState ++;
+        }
+          break;
+          
+          
+        case 5:
+         shutOff();
+         modeState = 0;
+         seriesState = 2;
+          break;
+      }
+}
   
   
   // falling edge
-  if (!rfid_tag_present && rfid_tag_present_prev){
+  /*if (!rfid_tag_present && rfid_tag_present_prev){
     Serial.println("Tag gone");
     modeState =0;
     shutOff();
-  }
+  }*/
 }

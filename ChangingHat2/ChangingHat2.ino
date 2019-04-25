@@ -44,7 +44,8 @@ int _rfid_error_counter2 = 0;
 bool _tag_found2 = false;
 
 boolean checkTag(){
-  rfid_tag_present_prev = rfid_tag_present;
+  
+ rfid_tag_present_prev = rfid_tag_present;
 
   _rfid_error_counter += 1;
   if(_rfid_error_counter > 2){
@@ -56,8 +57,8 @@ boolean checkTag(){
   byte bufferSize = sizeof(bufferATQA);
 
   // Reset baud rates
-  mfrc522.PCD_WriteRegister(mfrc522.TxModeReg, 0x00);
-  mfrc522.PCD_WriteRegister(mfrc522.RxModeReg, 0x00);
+  mfrc522.PCD_WriteRegister(mfrc522.TxModeReg, 0x01);
+  mfrc522.PCD_WriteRegister(mfrc522.RxModeReg, 0x01);
   // Reset ModWidthReg
   mfrc522.PCD_WriteRegister(mfrc522.ModWidthReg, 0x26);
 
@@ -65,8 +66,10 @@ boolean checkTag(){
 
   if(result == mfrc522.STATUS_OK){
     if ( ! mfrc522.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue   
+      
       return false;
     }
+    Serial.println("intento leer");
     _rfid_error_counter = 0;
     _tag_found = true;        
   }
@@ -76,6 +79,8 @@ boolean checkTag(){
 }
 
 boolean checkTag2(){
+  
+  
   rfid_tag_present_prev2 = rfid_tag_present2;
 
   _rfid_error_counter2 += 1;
@@ -88,15 +93,16 @@ boolean checkTag2(){
   byte bufferSize = sizeof(bufferATQA);
 
   // Reset baud rates
-  mfrc522.PCD_WriteRegister(mfrc522_2.TxModeReg, 0x00);
-  mfrc522.PCD_WriteRegister(mfrc522_2.RxModeReg, 0x00);
+  mfrc522_2.PCD_WriteRegister(mfrc522_2.TxModeReg, 0x00);
+  mfrc522_2.PCD_WriteRegister(mfrc522_2.RxModeReg, 0x00);
   // Reset ModWidthReg
-  mfrc522.PCD_WriteRegister(mfrc522_2.ModWidthReg, 0x26);
+  mfrc522_2.PCD_WriteRegister(mfrc522_2.ModWidthReg, 0x26);
 
   MFRC522::StatusCode result = mfrc522_2.PICC_RequestA(bufferATQA, &bufferSize);
 
-  if(result == mfrc522.STATUS_OK){
+  if(result == mfrc522_2.STATUS_OK){
     if ( ! mfrc522_2.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue   
+      Serial.println("no pudo leer");
       return false;
     }
     _rfid_error_counter2 = 0;
@@ -120,8 +126,13 @@ void setup() {
 }
 
 void loop() {
-  if(rfid_tag_present && rfid_tag_present_prev){
-    if(rfid_tag_present2 && rfid_tag_present_prev2){
+  Serial.println("leyo");
+  //checkTag();
+  //checkTag2();
+  //if(rfid_tag_present && !rfid_tag_present_prev){
+    //if(rfid_tag_present2 && !rfid_tag_present_prev2){
+    
+      score ++;
       matrix.print(score, DEC);
      matrix.writeDisplay();
       int status = digitalRead(buttonPin);
@@ -182,17 +193,17 @@ void loop() {
           }
           break;
       }
-    }
-  }else{
-    matrix.print(0, DEC);
-    matrix.writeDisplay();
-    ledState = 0;
-    pinMode(pwrLED, INPUT);
-    pinMode(greenLED, INPUT);
-    pinMode(blueLED, INPUT);
-    pinMode(redLED, INPUT);
+  
+  
+   /*if(!rfid_tag_present && rfid_tag_present_prev) {
+     Serial.println("down");
+     pinMode(pwrLED, INPUT);
+              pinMode(greenLED, INPUT);
+              pinMode(blueLED, INPUT);
+              pinMode(redLED, INPUT);
+              matrix.print(0, DEC);
+              matrix.writeDisplay();
+  
+  }*/
 }
-    }
-      
-  }
-}
+ 

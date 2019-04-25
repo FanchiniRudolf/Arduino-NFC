@@ -250,7 +250,7 @@ void loop() {
   if (!rfid_tag_present && rfid_tag_present_prev){
     Serial.println("Tag gone");
     modeState =0;
-    seriesState =2;
+    seriesState =2  ;
     shutOff();
   }
 }

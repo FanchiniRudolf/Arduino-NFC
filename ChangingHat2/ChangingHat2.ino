@@ -4,12 +4,11 @@
 #define RST_PIN         9           // Configurable, see typical pin layout above
 #define SS_PIN          10          // Configurable, see typical pin layout above
 
-#define RST_PIN2         8           // Configurable, see typical pin layout above
 #define SS_PIN2          7          // Configurable, see typical pin layout above
 
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  
-MFRC522 mfrc522_2(SS_PIN2, RST_PIN2);  
+MFRC522 mfrc522_2(SS_PIN2, RST_PIN);  
 
 #include <Wire.h> // Enable this line if using Arduino Uno, Mega, etc.
 #include <Adafruit_GFX.h>
@@ -27,9 +26,11 @@ Adafruit_7segment matrix = Adafruit_7segment();
 #define intervalNFC 1500
 
 int color = 0;
+unsigned long timerScore = 0;
 unsigned long timerLED = 0;
-unsigned long timerNFC = 0;
 int ledState = 0;
+int nfcStart = 0;
+int nfcNumber = 0;
 int score = 0;
 
 
@@ -113,6 +114,12 @@ boolean checkTag2(){
   
 }
 
+void shutOff(){
+  pinMode(pwrLED, INPUT);
+  pinMode(greenLED, INPUT);
+  pinMode(blueLED, INPUT);
+  pinMode(redLED, INPUT);
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -126,11 +133,36 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("leyo");
+  
   checkTag();
-  //checkTag2();
+  checkTag2();
   if(rfid_tag_present && !rfid_tag_present_prev){
-    //if(rfid_tag_present2 && !rfid_tag_present_prev2){
+    Serial.println("0 leyo");
+    nfcNumber ++;
+    if (nfcStart == 0){
+      nfcStart = 1;
+    }
+  }
+    if(rfid_tag_present2 && !rfid_tag_present_prev2){
+    Serial.println("1 leyo");
+    nfcNumber ++;
+    if (nfcStart == 0){
+      nfcStart = 1;
+    }
+    }
+
+  if (nfcNumber == 0){
+    matrix.print(0, DEC);
+     matrix.writeDisplay();
+     shutOff();
+  }
+
+  else if (nfcNumber == 1){
+    matrix.print(score, DEC);
+     matrix.writeDisplay();
+  }
+  
+  else if (nfcNumber == 2){
     
       score ++;
       matrix.print(score, DEC);
@@ -144,7 +176,6 @@ void loop() {
         case 0:
         case 1:
           //blanco
-          Serial.println("blanco");
           pinMode(pwrLED, OUTPUT);
           pinMode(greenLED, OUTPUT);
           pinMode(blueLED, OUTPUT);
@@ -197,14 +228,20 @@ void loop() {
   
   
    if(!rfid_tag_present && rfid_tag_present_prev) {
-     Serial.println("down");
-     pinMode(pwrLED, INPUT);
-              pinMode(greenLED, INPUT);
-              pinMode(blueLED, INPUT);
-              pinMode(redLED, INPUT);
-              matrix.print(0, DEC);
-              matrix.writeDisplay();
+     Serial.println("down 0");
+     nfcNumber --;
+     if (nfcStart == 1){
+      nfcStart = 0;
+    }
   
    }
+   if(!rfid_tag_present2 && rfid_tag_present_prev2) {
+    Serial.println("down 1");
+    nfcNumber --;
+    if (nfcStart == 2){
+      nfcStart = 0;
+    }
+   }
 }
+
  

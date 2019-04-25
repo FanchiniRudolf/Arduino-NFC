@@ -15,7 +15,7 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 int blinks = 4;
 int blinkState = blinks;
-int seriesState = 1;
+int seriesState = 0;
 int modeState = 0;
 int status = 1;
 unsigned long timer = 0;

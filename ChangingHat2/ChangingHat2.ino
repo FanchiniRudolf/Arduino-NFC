@@ -127,9 +127,9 @@ void setup() {
 
 void loop() {
   Serial.println("leyo");
-  //checkTag();
+  checkTag();
   //checkTag2();
-  //if(rfid_tag_present && !rfid_tag_present_prev){
+  if(rfid_tag_present && !rfid_tag_present_prev){
     //if(rfid_tag_present2 && !rfid_tag_present_prev2){
     
       score ++;
@@ -193,9 +193,10 @@ void loop() {
           }
           break;
       }
+  }
   
   
-   /*if(!rfid_tag_present && rfid_tag_present_prev) {
+   if(!rfid_tag_present && rfid_tag_present_prev) {
      Serial.println("down");
      pinMode(pwrLED, INPUT);
               pinMode(greenLED, INPUT);
@@ -204,6 +205,6 @@ void loop() {
               matrix.print(0, DEC);
               matrix.writeDisplay();
   
-  }*/
+   }
 }
  

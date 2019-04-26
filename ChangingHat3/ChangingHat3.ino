@@ -12,10 +12,11 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);
 #define greenLED 3
 #define whiteLED 6
 #define yellowLED 5
+#define stripLED 8 
 
-int blinks = 4;
+int blinks = 100;
 int blinkState = blinks;
-int seriesState = 0;
+int seriesState = 2;
 int modeState = 0;
 int status = 1;
 unsigned long timer = 0;
@@ -50,6 +51,12 @@ void turnWhite(){
   digitalWrite(whiteLED, HIGH);
 }
 
+void turnStrip(){
+  pinMode(stripLED, OUTPUT);
+  digitalWrite(stripLED, HIGH);
+
+}
+
 void turnAll(){
   pinMode(redLED, OUTPUT);
         digitalWrite(redLED, HIGH);
@@ -69,6 +76,7 @@ void shutOff(){
           pinMode(blueLED, INPUT);
           pinMode(yellowLED, INPUT);
           pinMode(whiteLED, INPUT);
+          pinMode(stripLED, INPUT);
 }
 
 
@@ -141,6 +149,7 @@ void blinkingLights(){
          shutOff();
          modeState = 0;
          seriesState = 1;
+         turnStrip();
           break;
       }
   }
@@ -148,6 +157,7 @@ if (timer + 300 <= millis() && seriesState == 1){
   //encender tira
   timer = millis();
   shutOff();
+  turnStrip();
   blinkState --;
   Serial.println(modeState);
   Serial.print(blinkState);
@@ -157,7 +167,8 @@ if (timer + 300 <= millis() && seriesState == 1){
         if (blinkState%2==1){
           turnRed();
         }else if (blinkState%2==0 && blinkState != 0){
-          shutOff;
+          shutOff();
+          turnStrip();
         }else if (blinkState == 0){
           blinkState = blinks;
           modeState ++;
@@ -168,8 +179,9 @@ if (timer + 300 <= millis() && seriesState == 1){
         if (blinkState%2==1){
           turnGreen();
         }else if (blinkState%2==0 && blinkState != 0){
-          shutOff;
-        }else if (blinkState== 0){
+          shutOff();
+          turnStrip();
+          }else if (blinkState== 0){
           blinkState = blinks;
           modeState ++;
         }
@@ -178,7 +190,8 @@ if (timer + 300 <= millis() && seriesState == 1){
           if (blinkState%2==1){
           turnBlue();
         }else if (blinkState%2==0 && blinkState != 0){
-          shutOff;
+          shutOff();
+          turnStrip();
         }else if (blinkState== 0){
           blinkState = blinks;
           modeState ++;
@@ -189,8 +202,8 @@ if (timer + 300 <= millis() && seriesState == 1){
          if (blinkState%2==1){
           turnYellow();
         }else if (blinkState%2==0 && blinkState != 0){
-          shutOff;
-        }else if (blinkState == 0){
+          shutOff();
+          turnStrip();        }else if (blinkState == 0){
           blinkState = blinks;
           modeState ++;
         }
@@ -201,7 +214,8 @@ if (timer + 300 <= millis() && seriesState == 1){
          if (blinkState%2==1){
           turnWhite();
         }else if (blinkState%2==0 && blinkState != 0){
-          shutOff;
+          shutOff();
+          turnStrip();
         }else if (blinkState== 0){
           blinkState = blinks;
           modeState ++;

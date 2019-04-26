@@ -8,8 +8,7 @@
 
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  
-MFRC522 mfrc522_2(SS_PIN2, RST_PIN); 
-MFRC522::MIFARE_Key key; 
+MFRC522 mfrc522_2(SS_PIN2, RST_PIN);  
 
 #include <Wire.h> // Enable this line if using Arduino Uno, Mega, etc.
 #include <Adafruit_GFX.h>
@@ -71,6 +70,7 @@ boolean checkTag(){
       
       return false;
     }
+    Serial.println("intento leer");
     _rfid_error_counter = 0;
     _tag_found = true;        
   }
@@ -102,7 +102,10 @@ boolean checkTag2(){
   MFRC522::StatusCode result = mfrc522_2.PICC_RequestA(bufferATQA, &bufferSize);
 
   if(result == mfrc522_2.STATUS_OK){
-   
+    if ( ! mfrc522_2.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue   
+      Serial.println("no pudo leer");
+      return false;
+    }
     _rfid_error_counter2 = 0;
     _tag_found2 = true;        
   }
@@ -130,60 +133,21 @@ void setup() {
 }
 
 void loop() {
-  // In this sample we use the second sector,
-    // that is: sector #1, covering block #4 up to and including block #7
-    byte sector         = 1;
-    byte blockAddr      = 4;
-    byte dataBlock[]    = {
-        0x00, 0x00, 0x00, 0x00, //  1,  2,   3,  4,
-        0x00, 0x00, 0x00, 0x00, //  5,  6,   7,  8,
-        0x00, 0x00, 0x00, 0x00, //  9, 10, 255, 11,
-        0x00, 0x00, 0x00, 0x00  // 12, 13, 14, 15
-    };
-    byte trailerBlock   = 7;
-    MFRC522::StatusCode status;
-    byte buffer[18];
-    byte size = sizeof(buffer);
-    
+  
   checkTag();
   checkTag2();
   if(rfid_tag_present && !rfid_tag_present_prev){
     Serial.println("0 leyo");
-    
-    // Show the whole sector as it currently is
-    Serial.println(F("Current data in sector:"));
-    mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
-    Serial.println();
-    
-    //Read data from the block
-    Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
-    Serial.println(F(" ..."));
-    status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
-    if (status != MFRC522::STATUS_OK) {
-        Serial.print(F("MIFARE_Read() failed: "));
-        Serial.println(mfrc522.GetStatusCodeName(status));
-    }
-    Serial.print(F("Data in block ")); Serial.print(blockAddr); Serial.println(F(":"));
-    dump_byte_array(buffer, 16); Serial.println();
-    Serial.println();
-    
     nfcNumber ++;
     if (nfcStart == 0){
       nfcStart = 1;
     }
-    if (nfcNumber == 2){
-      timerScore = millis();
-    }
-    
   }
     if(rfid_tag_present2 && !rfid_tag_present_prev2){
     Serial.println("1 leyo");
     nfcNumber ++;
     if (nfcStart == 0){
       nfcStart = 1;
-    }
-    if (nfcNumber == 2){
-      timerScore = millis();
     }
     }
 
@@ -196,44 +160,12 @@ void loop() {
   else if (nfcNumber == 1){
     matrix.print(score, DEC);
      matrix.writeDisplay();
-     shutOff();
   }
   
   else if (nfcNumber == 2){
-    if (timerScore +1000 <= millis()){
-      timerScore = millis();
+    
       score ++;
-      // Authenticate using key B
-    Serial.println("Authenticating again using key B...");
-    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
-    if (status != MFRC522::STATUS_OK) {
-        Serial.print("PCD_Authenticate() failed: ");
-        Serial.println(mfrc522.GetStatusCodeName(status));
-        return;
-    }
-      
-      // Write data to the block
-    Serial.print(F("Writing data into block ")); Serial.print(blockAddr);
-    Serial.println(F(" ..."));
-    dump_byte_array(dataBlock, 16); Serial.println();
-    status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);
-    if (status != MFRC522::STATUS_OK) {
-        Serial.print(F("MIFARE_Write() failed: "));
-        Serial.println(mfrc522.GetStatusCodeName(status));
-    }
-    Serial.println();
-    // Read data from the block (again, should now be what we have written)
-    Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
-    Serial.println(F(" ..."));
-    status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
-    if (status != MFRC522::STATUS_OK) {
-        Serial.print(F("MIFARE_Read() failed: "));
-        Serial.println(mfrc522.GetStatusCodeName(status));
-    }
-    Serial.print(F("Data in block ")); Serial.print(blockAddr); Serial.println(F(":"));
-    dump_byte_array(buffer, 16); Serial.println();
-  }
-     matrix.print(score, DEC);
+      matrix.print(score, DEC);
      matrix.writeDisplay();
       int status = digitalRead(buttonPin);
       if(status == HIGH){
@@ -311,11 +243,3 @@ void loop() {
     }
    }
 }
-
-void dump_byte_array(byte *buffer, byte bufferSize) {
-    for (byte i = 0; i < bufferSize; i++) {
-        Serial.print(buffer[i] < 0x10 ? " 0" : " ");
-        Serial.print(buffer[i], HEX);
-    }
-}
- 

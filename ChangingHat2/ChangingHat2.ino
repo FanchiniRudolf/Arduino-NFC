@@ -70,7 +70,6 @@ boolean checkTag(){
       
       return false;
     }
-    Serial.println("intento leer");
     _rfid_error_counter = 0;
     _tag_found = true;        
   }
@@ -142,12 +141,18 @@ void loop() {
     if (nfcStart == 0){
       nfcStart = 1;
     }
+    if (nfcNumber == 2){
+      timerScore = millis();
+    }
   }
     if(rfid_tag_present2 && !rfid_tag_present_prev2){
     Serial.println("1 leyo");
     nfcNumber ++;
     if (nfcStart == 0){
       nfcStart = 1;
+    }
+    if (nfcNumber == 2){
+      timerScore = millis();
     }
     }
 
@@ -163,9 +168,13 @@ void loop() {
   }
   
   else if (nfcNumber == 2){
-    
+    Serial.println(millis());
+    if (timerScore +2000 <= millis()){
+      timerScore == millis();
       score ++;
-      matrix.print(score, DEC);
+      
+    }
+    matrix.print(score, DEC);
      matrix.writeDisplay();
       int status = digitalRead(buttonPin);
       if(status == HIGH){

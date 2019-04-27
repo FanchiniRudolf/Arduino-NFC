@@ -165,16 +165,73 @@ void loop() {
   else if (nfcNumber == 1){
     matrix.print(score, DEC);
      matrix.writeDisplay();
+     int status = digitalRead(buttonPin);
+      if(status == HIGH){
+        color ++;
+        if (color == 6) {color = 0;}
+      }
+      switch(color){
+        case 0:
+        case 1:
+          //blanco
+          pinMode(pwrLED, OUTPUT);
+          pinMode(greenLED, OUTPUT);
+          pinMode(blueLED, OUTPUT);
+          pinMode(redLED, INPUT);
+          digitalWrite(pwrLED,HIGH);
+          digitalWrite(greenLED, LOW);
+          digitalWrite(blueLED, LOW);
+          break;
+          
+        case 2:
+        case 3:
+          //ambar
+          Serial.println("ambar");
+          pinMode(pwrLED, OUTPUT);
+          pinMode(greenLED, INPUT);
+          pinMode(blueLED, OUTPUT);
+          pinMode(redLED, OUTPUT);
+          digitalWrite(pwrLED,HIGH);
+          digitalWrite(redLED, LOW);
+          digitalWrite(blueLED, LOW);
+          break;
+          
+        case 4:
+        case 5:
+          //blanco parpadeo
+          Serial.println("blanco parpadeo");
+          if (millis()-timerLED > intervalLED){
+            timerLED = millis();
+            if (ledState == 0){
+              ledState = 1;
+              pinMode(pwrLED, OUTPUT);
+              pinMode(greenLED, OUTPUT);
+              pinMode(blueLED, OUTPUT);
+              pinMode(redLED, INPUT);
+              digitalWrite(pwrLED,HIGH);
+              digitalWrite(greenLED, LOW);
+              digitalWrite(blueLED, LOW);
+            }
+            else{
+              ledState = 0;
+              pinMode(pwrLED, INPUT);
+              pinMode(greenLED, INPUT);
+              pinMode(blueLED, INPUT);
+              pinMode(redLED, INPUT);
+            }
+          }
+          break;
+      }
   }
   
   else if (nfcNumber == 2){
     Serial.println(millis());
-    if (timerScore +2000 <= millis()){
-      timerScore == millis();
+    if (timerScore +2500 <= millis()){
+      timerScore = millis();
       score ++;
-      
+       matrix.print(score, DEC);
     }
-    matrix.print(score, DEC);
+   
      matrix.writeDisplay();
       int status = digitalRead(buttonPin);
       if(status == HIGH){

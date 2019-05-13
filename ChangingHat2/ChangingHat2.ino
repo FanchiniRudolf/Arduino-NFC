@@ -2,9 +2,9 @@
 #include <MFRC522.h>
 
 #define RST_PIN         9           // Configurable, see typical pin layout above
-#define SS_PIN          10          // Configurable, see typical pin layout above
+#define SS_PIN          8          // Configurable, see typical pin layout above
 
-#define SS_PIN2          7          // Configurable, see typical pin layout above
+#define SS_PIN2          10          // Configurable, see typical pin layout above
 
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  
@@ -137,7 +137,7 @@ void loop() {
   checkTag2();
   if(rfid_tag_present && !rfid_tag_present_prev){
     Serial.println("0 leyo");
-    nfcNumber ++;
+    nfcNumber =2;
     if (nfcStart == 0){
       nfcStart = 1;
     }
@@ -147,7 +147,7 @@ void loop() {
   }
     if(rfid_tag_present2 && !rfid_tag_present_prev2){
     Serial.println("1 leyo");
-    nfcNumber ++;
+    nfcNumber =2;
     if (nfcStart == 0){
       nfcStart = 1;
     }
@@ -295,7 +295,7 @@ void loop() {
   
    if(!rfid_tag_present && rfid_tag_present_prev) {
      Serial.println("down 0");
-     nfcNumber --;
+     nfcNumber =0;
      if (nfcStart == 1){
       nfcStart = 0;
     }
@@ -303,7 +303,7 @@ void loop() {
    }
    if(!rfid_tag_present2 && rfid_tag_present_prev2) {
     Serial.println("down 1");
-    nfcNumber --;
+    nfcNumber =0;
     if (nfcStart == 2){
       nfcStart = 0;
     }

@@ -1,4 +1,4 @@
-#define ctsPin 8 // Pin for capactitive touch sensor
+#define ctsPin 14 // Pin for capactitive touch sensor
 int ledPin = 5 ; // pin for the LED
  
 void setup() {

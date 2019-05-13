@@ -1,8 +1,8 @@
 #include <SPI.h>
 
 
-#define pwrLED 3
-#define redLED 4
+#define pwrLED 4
+#define redLED 3
 #define greenLED 5
 #define blueLED 6
 

@@ -8,6 +8,7 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 #define autoButton 8
 #define manualButton 2
+#define capacitiveManual 14
 #define blueLED 5
 #define redLED 3
 #define greenLED 4
@@ -82,6 +83,15 @@ void checkButtons(){
       }
       status = digitalRead(manualButton);
       if (status == 0){
+         Serial.println("manual");
+        modeState = 2;
+        timer = millis();
+        selector =random(1, 6);
+        
+      }
+      status = digitalRead(capacitiveManual);
+      if (status == HIGH){
+        Serial.println("capacitivo");
         modeState = 2;
         timer = millis();
         selector =random(1, 6);
@@ -112,6 +122,7 @@ boolean checkTag(){
 
   if(result == mfrc522.STATUS_OK){
     if ( ! mfrc522.PICC_ReadCardSerial()) { //Since a PICC placed get Serial and continue   
+      Serial.print("error");
       return false;
     }
     _rfid_error_counter = 0;
@@ -221,6 +232,7 @@ void setup() {
   Serial.println("Aproach card");
   pinMode(manualButton, INPUT_PULLUP);
   pinMode(autoButton, INPUT);
+  pinMode(capacitiveManual, INPUT);
   pinMode(redLED, INPUT);
   pinMode(greenLED, INPUT);
   pinMode(blueLED, INPUT);
@@ -233,8 +245,10 @@ void loop() {
   checkTag();
   
   // rising edge
-  if(rfid_tag_present && rfid_tag_present_prev){
+  if(rfid_tag_present && !rfid_tag_present_prev){
+    
     if( modeState == 0){
+      Serial.println("found");
   modeState = 3;
  }   }
       checkButtons();
@@ -265,4 +279,5 @@ void loop() {
     modeState =0;
     shutOff();
   }
+
 }
